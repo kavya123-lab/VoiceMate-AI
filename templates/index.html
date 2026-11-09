@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VoiceMate AI</title>
+
+  <!-- Inter for English; Noto fonts make Hindi and Gujarati look right on every device -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600&family=Noto+Sans+Gujarati:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <!-- Icon library: defined once here, reused everywhere with <use href="#i-name"> -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-wave" viewBox="0 0 24 24"><line x1="4" y1="10" x2="4" y2="14"/><line x1="8" y1="6" x2="8" y2="18"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="16" y1="7" x2="16" y2="17"/><line x1="20" y1="10" x2="20" y2="14"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></symbol>
+    <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><polygon points="7 4 20 12 7 20 7 4"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol>
+    <symbol id="i-speaker" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+  </svg>
+
+  <div class="app">
+
+    <!-- ============ Sidebar: logo, new chat, history ============ -->
+    <aside class="sidebar" id="sidebar" aria-label="Conversation history">
+      <div class="brand">
+        <span class="brand-logo"><svg class="icon" width="24" height="24"><use href="#i-wave"/></svg></span>
+        <div>
+          <div class="brand-name">VoiceMate AI</div>
+          <div class="brand-tag">Multilingual voice assistant</div>
+        </div>
+      </div>
+
+      <button class="new-chat-btn" id="new-chat-btn" type="button">
+        <svg class="icon" width="20" height="20"><use href="#i-plus"/></svg>
+        New conversation
+      </button>
+
+      <h2 class="side-heading">History</h2>
+      <nav class="history" aria-label="Past conversations">
+        <ul class="history-list" id="history-list"></ul>
+        <p class="history-empty" id="history-empty">Your conversations will appear here.</p>
+      </nav>
+
+      <div class="powered">
+        <h2 class="side-heading">Powered by</h2>
+        <dl>
+          <dt>Speech to text</dt><dd>Gnani Prisma</dd>
+          <dt>Text to speech</dt><dd>Gnani Timbre</dd>
+          <dt>Answers</dt><dd>Sarvam AI</dd>
+        </dl>
+      </div>
+    </aside>
+    <div class="sidebar-overlay" id="sidebar-overlay" hidden></div>
+
+    <!-- ============ Main area ============ -->
+    <main class="main">
+
+      <header class="topbar">
+        <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-label="Open history" aria-controls="sidebar" aria-expanded="false">
+          <svg class="icon" width="22" height="22"><use href="#i-menu"/></svg>
+        </button>
+        <div>
+          <h1>AI Voice Assistant</h1>
+          <p class="subtitle">Ask by voice or by typing, in English, Hindi or Gujarati.</p>
+        </div>
+      </header>
+
+      <div class="grid">
+
+        <!-- Left column: microphone, audio player and recent voice sessions -->
+        <div class="col">
+
+          <section class="card voice-card" aria-labelledby="voice-title">
+            <div class="card-head">
+              <h2 id="voice-title">Live voice</h2>
+              <span class="status-pill" id="status-pill" data-state="ready">
+                <span class="dot"></span><span id="status-text">Ready</span>
+              </span>
+            </div>
+
+            <div class="wave-stage">
+              <canvas id="waveform" aria-hidden="true"></canvas>
+              <button class="mic-btn" id="mic-btn" type="button" aria-pressed="false" aria-label="Start recording">
+                <svg class="icon" id="mic-icon" width="34" height="34"><use href="#i-mic"/></svg>
+              </button>
+            </div>
+
+            <p class="mic-hint" id="mic-hint">Tap the microphone and ask your question.</p>
+            <p class="rec-timer" id="rec-timer" hidden>0:00 of 0:30</p>
+
+            <div class="stats">
+              <div class="stat">
+                <span class="stat-icon stat-purple"><svg class="icon" width="22" height="22"><use href="#i-chat"/></svg></span>
+                <div><div class="stat-num" id="stat-conversations">0</div><div class="stat-label">Conversations</div></div>
+              </div>
+              <div class="stat">
+                <span class="stat-icon stat-teal"><svg class="icon" width="22" height="22"><use href="#i-help"/></svg></span>
+                <div><div class="stat-num" id="stat-questions">0</div><div class="stat-label">Questions asked</div></div>
+              </div>
+              <div class="stat">
+                <span class="stat-icon stat-blue"><svg class="icon" width="22" height="22"><use href="#i-mic"/></svg></span>
+                <div><div class="stat-num" id="stat-voice">0</div><div class="stat-label">Voice questions</div></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="card player-card" aria-labelledby="player-heading">
+            <div class="card-head"><h2 id="player-heading">Voice response</h2></div>
+            <div class="player">
+              <button class="round-btn" id="player-toggle" type="button" aria-label="Play" disabled>
+                <svg class="icon icon-fill" id="player-icon" width="20" height="20"><use href="#i-play"/></svg>
+              </button>
+              <div class="player-body">
+                <div class="player-title" id="player-title">Turn on spoken answers, or tap Listen on any answer.</div>
+                <input class="player-seek" id="player-seek" type="range" min="0" max="100" value="0" step="0.1" disabled aria-label="Seek audio">
+              </div>
+              <span class="player-time" id="player-time">0:00</span>
+            </div>
+            <audio id="player" preload="auto"></audio>
+          </section>
+
+          <section class="card sessions-card" aria-labelledby="sessions-heading">
+            <div class="card-head"><h2 id="sessions-heading">Recent voice sessions</h2></div>
+            <ul class="sessions-list" id="sessions-list"></ul>
+            <p class="sessions-empty" id="sessions-empty">Your voice questions will appear here.</p>
+            <p class="sessions-note">Recordings are kept until you delete their conversation. Only your latest 20 are saved.</p>
+          </section>
+
+        </div>
+
+        <!-- Right column: language, settings, chat -->
+        <div class="col">
+
+          <section class="card" aria-labelledby="lang-heading">
+            <div class="card-head"><h2 id="lang-heading">Language</h2></div>
+            <div class="lang-list" id="lang-list" role="radiogroup" aria-label="Choose a language">
+              <button class="lang-card is-active" type="button" role="radio" aria-checked="true" data-lang="en">
+                <span class="lang-badge">EN</span>
+                <span class="lang-names"><strong>English</strong><small>Indian English</small></span>
+              </button>
+              <button class="lang-card" type="button" role="radio" aria-checked="false" data-lang="hi">
+                <span class="lang-badge">हि</span>
+                <span class="lang-names"><strong>हिन्दी</strong><small>Hindi</small></span>
+              </button>
+              <button class="lang-card" type="button" role="radio" aria-checked="false" data-lang="gu">
+                <span class="lang-badge">ગુ</span>
+                <span class="lang-names"><strong>ગુજરાતી</strong><small>Gujarati</small></span>
+              </button>
+            </div>
+
+            <label class="switch-row" for="voice-toggle">
+              <span class="switch-text">
+                <strong>Speak answers aloud</strong>
+                <small>Uses Gnani Timbre to read each answer.</small>
+              </span>
+              <span class="switch">
+                <input type="checkbox" id="voice-toggle" checked>
+                <span class="slider"></span>
+              </span>
+            </label>
+          </section>
+
+          <section class="card chat-card" aria-labelledby="chat-heading">
+            <div class="card-head"><h2 id="chat-heading">Conversation</h2></div>
+
+            <div class="chat-messages" id="chat-messages" role="log" aria-live="polite">
+              <div class="msg msg-ai" id="welcome">
+                <span class="avatar"><svg class="icon" width="20" height="20"><use href="#i-wave"/></svg></span>
+                <div class="bubble"><p>Hello! I’m VoiceMate AI. Pick a language, tap the microphone, or type a question below.</p></div>
+              </div>
+            </div>
+
+            <form class="chat-form" id="chat-form" autocomplete="off">
+              <label class="sr-only" for="text-input">Type your question</label>
+              <input id="text-input" type="text" maxlength="1000" placeholder="Type your question…">
+              <button class="send-btn" id="send-btn" type="submit" aria-label="Send question">
+                <svg class="icon" width="20" height="20"><use href="#i-send"/></svg>
+              </button>
+            </form>
+          </section>
+
+        </div>
+      </div>
+
+      <p class="disclaimer">Answers are written by AI and can contain mistakes. Check important facts.</p>
+    </main>
+  </div>
+
+  <!-- Error messages appear here -->
+  <div class="toast" id="toast" role="alert" hidden></div>
+
+  <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+</body>
+</html>

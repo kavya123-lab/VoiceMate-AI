@@ -1,0 +1,48 @@
+# =====================================================================
+# VoiceMate AI .gitignore
+# Anything listed here is NEVER uploaded to GitHub
+# =====================================================================
+
+# ---------- Secrets: the most important part ----------
+.env
+.env.*
+!.env.example
+
+# ---------- Python virtual environment and cache ----------
+venv/
+.venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# ---------- Local database (conversations and saved voice recordings) ----------
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+
+# ---------- Audio files (tests, uploads, voice recordings) ----------
+*.wav
+*.mp3
+*.webm
+*.ogg
+*.m4a
+*.flac
+*.aac
+
+# Keep the uploads folder in the repository, but not what is inside it
+uploads/*
+!uploads/.gitkeep
+
+# ---------- Debug and test output ----------
+debug_output.txt
+*.log
+
+# ---------- Editors and operating system ----------
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
